@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Census · 面板美化 6 个方向</title>
+<style>
+	:root {
+		--accent: #8b7bf7;
+		--accent-2: #b3a4ff;
+		--accent-3: #4a4290;
+		--accent-soft: rgba(139, 123, 247, .16);
+		--up: #3fbf6a;
+		--up-soft: rgba(63, 191, 106, .14);
+		--warn: #d8a13c;
+		--track: #26262a;
+	}
+
+	[data-theme="dark"] {
+		--page: #101012;
+		--page-2: #17171a;
+		--panel: #1e1e20;
+		--panel-alt: #26262a;
+		--border: #33333a;
+		--border-soft: #2a2a30;
+		--text: #dadade;
+		--muted: #9a9aa4;
+		--faint: #6b6b75;
+		--hover: rgba(255, 255, 255, .055);
+		--shadow: 0 10px 34px rgba(0, 0, 0, .5);
+		--grad-a: #ffffff;
+		--grad-b: #a9a2d8;
+	}
+
+	[data-theme="light"] {
+		--page: #f2f2f5;
+		--page-2: #e9e9ee;
+		--panel: #ffffff;
+		--panel-alt: #f7f7fa;
+		--border: #e2e2e8;
+		--border-soft: #ededf1;
+		--text: #2a2a30;
+		--muted: #6d6d78;
+		--faint: #9c9ca6;
+		--hover: rgba(0, 0, 0, .045);
+		--shadow: 0 10px 28px rgba(20, 20, 40, .09);
+		--grad-a: #1c1c22;
+		--grad-b: #5b4fc4;
+		/* A pastel purple that reads on white is not the same purple that reads on
+		   #1e1e20 — the light theme needs a deeper accent and a darker track. */
+		--accent: #6c58f0;
+		--accent-2: #8f7dff;
+		--accent-3: #b3a8ea;
+		--accent-soft: rgba(108, 88, 240, .10);
+		--up: #1a9e46;
+		--up-soft: rgba(26, 158, 70, .10);
+		--warn: #a9761a;
+		--track: #e8e7f2;
+	}
+
+	* { box-sizing: border-box; }
+
+	body {
+		margin: 0;
+		padding: 40px 32px 72px;
+		background:
+			radial-gradient(900px 420px at 12% -8%, rgba(139, 123, 247, .10), transparent 70%),
+			var(--page);
+		color: var(--text);
+		font: 14px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+		-webkit-font-smoothing: antialiased;
+	}
+
+	.wrap { max-width: 1240px; margin: 0 auto; }
+
+	/* ---------- page chrome ---------- */
+
+	.page-head {
+		display: flex;
+		align-items: flex-end;
+		justify-content: space-between;
+		gap: 24px;
+		padding-bottom: 22px;
+		border-bottom: 1px solid var(--border-soft);
+	}
+
+	h1 {
+		margin: 0 0 6px;
+		font-size: 22px;
+		font-weight: 650;
+		letter-spacing: -.01em;
+	}
+
+	.lede {
+		margin: 0;
+		max-width: 720px;
+		font-size: 13px;
+		color: var(--muted);
+	}
+
+	.theme-btn {
+		flex: none;
+		height: 32px;
+		padding: 0 14px;
+		border: 1px solid var(--border);
+		border-radius: 8px;
+		background: var(--panel);
+		color: var(--text);
+		font: inherit;
+		font-size: 12.5px;
+		cursor: pointer;
+	}
+
+	.theme-btn:hover { background: var(--panel-alt); }
+
+	/* ---------- feasibility note ---------- */
+
+	.note {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 12px;
+		margin: 22px 0 34px;
+	}
+
+	.note-item {
+		padding: 13px 15px;
+		border: 1px solid var(--border-soft);
+		border-radius: 10px;
+		background: var(--panel);
+	}
+
+	.note-item h3 {
+		display: flex;
+		align-items: center;
+		gap: 7px;
+		margin: 0 0 6px;
+		font-size: 12.5px;
+		font-weight: 600;
+	}
+
+	.dot {
+		width: 7px;
+		height: 7px;
+		border-radius: 50%;
+		background: var(--up);
+	}
+
+	.dot.warn { background: var(--warn); }
+	.dot.no { background: #d8686d; }
+
+	.note-item p {
+		margin: 0;
+		font-size: 12px;
+		line-height: 1.6;
+		color: var(--muted);
+	}
+
+	/* ---------- demo grid ---------- */
+
+	.grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(342px, 1fr));
+		gap: 34px 28px;
+		align-items: start;
+	}
+
+	.demo { position: relative; }
+
+	.demo-head { min-height: 76px; margin-bottom: 12px; }
+
+	.tagline {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		margin-bottom: 7px;
+	}
+
+	.tag {
+		padding: 2px 8px;
+		border-radius: 5px;
+		background: var(--panel-alt);
+		border: 1px solid var(--border-soft);
+		font-size: 11px;
+		font-weight: 600;
+		letter-spacing: .04em;
+		color: var(--muted);
+	}
+
+	.tag.rec {
+		background: var(--accent-soft);
+		border-color: transparent;
+		color: var(--accent);
+	}
+
+	.demo-head h2 {
+		margin: 0 0 4px;
+		font-size: 15px;
+		font-weight: 620;
+	}
+
+	.demo-head p {
+		margin: 0;
+		font-size: 12.5px;
+		color: var(--muted);
+	}
+
+	.stage {
+		padding: 0;
+		border-radius: 12px;
+		background: var(--page-2);
+		border: 1px solid var(--border-soft);
+		box-shadow: var(--shadow);
+		overflow: hidden;
+	}
+
+	.ribbon {
+		height: 28px;
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		padding: 0 12px;
+		background: var(--panel-alt);
+		border-bottom: 1px solid var(--border-soft);
+		font-size: 11px;
+		color: var(--faint);
+	}
+
+	.ribbon b { color: var(--muted); font-weight: 500; }
+
+	/* ---------- the panel: 320px Obsidian sidebar ---------- */
+
+	.panel {
+		width: 320px;
+		padding: 18px 18px 16px;
+		background: var(--panel);
+		color: var(--text);
+		display: flex;
+		flex-direction: column;
+	}
+
+	.eyebrow-row {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 10px;
+	}
+
+	.eyebrow {
+		font-size: 11.5px;
+		font-weight: 600;
+		letter-spacing: .07em;
+		text-transform: uppercase;
+		color: var(--faint);
+	}
+
+	.delta {
+		display: inline-flex;
+		align-items: center;
+		gap: 3px;
+		padding: 1px 7px;
+		border-radius: 20px;
+		background: var(--up-soft);
+		font-size: 11px;
+		font-weight: 600;
+		color: var(--up);
+		font-variant-numeric: tabular-nums;
+	}
+
+	.total {
+		margin-top: 2px;
+		font-size: 46px;
+		line-height: 1.02;
+		font-weight: 660;
+		letter-spacing: -.028em;
+		font-variant-numeric: tabular-nums;
+	}
+
+	.total.is-grad {
+		background: linear-gradient(168deg, var(--grad-a) 12%, var(--grad-b) 108%);
+		-webkit-background-clip: text;
+		background-clip: text;
+		-webkit-text-fill-color: transparent;
+		color: var(--grad-a);
+	}
+
+	.caption {
+		margin-top: 5px;
+		font-size: 12px;
+		color: var(--muted);
+	}
+
+	.caption em {
+		font-style: normal;
+		color: var(--text);
+		font-variant-numeric: tabular-nums;
+	}
+
+	/* ---------- list + bars ---------- */
+
+	.list {
+		margin-top: 16px;
+		padding-top: 13px;
+		border-top: 1px solid var(--border-soft);
+		display: flex;
+		flex-direction: column;
+		gap: 11px;
+	}
+
+	.item { display: flex; flex-direction: column; gap: 5px; }
+
+	.item-top {
+		display: flex;
+		align-items: baseline;
+		gap: 10px;
+	}
+
+	.name {
+		flex: 1;
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		font-size: 12.5px;
+		color: var(--text);
+		text-decoration: none;
+	}
+
+	.value {
+		flex: none;
+		font-size: 12.5px;
+		font-weight: 600;
+		font-variant-numeric: tabular-nums;
+		color: var(--text);
+	}
+
+	.value.is-missing { font-weight: 400; color: var(--faint); }
+
+	.track {
+		position: relative;
+		height: 4px;
+		border-radius: 3px;
+		background: var(--track);
+		overflow: hidden;
+	}
+
+	.fill {
+		position: absolute;
+		inset: 0 auto 0 0;
+		min-width: 3px;
+		border-radius: 3px;
+		background: linear-gradient(90deg, var(--accent) 0%, var(--accent-2) 100%);
+	}
+
+	.fill.is-lead {
+		background: linear-gradient(90deg, var(--accent) 0%, var(--accent-2) 100%);
+		box-shadow: 0 0 12px var(--accent-soft);
+	}
+
+	.track.is-empty {
+		background: transparent;
+		border-top: 2px dotted var(--border);
+		height: 4px;
+	}
+
+	/* `min-width` keeps a real 6-download bar visible; on a missing row it would
+	   leave a stray dot that reads as "almost zero". */
+	.track.is-empty .fill { display: none; }
+
+	/* ---------- compact rows (trend variant) ---------- */
+
+	.list.compact { gap: 7px; }
+
+	.list.compact .item-top { align-items: center; }
+
+	/* Two right-aligned columns so +12/+3/+1 and 1,371/79/6 line up down the
+	   panel instead of shuffling with each number's width. */
+	.list.compact .value { min-width: 46px; text-align: right; }
+
+	.mini-delta {
+		flex: none;
+		min-width: 26px;
+		text-align: right;
+		font-size: 11px;
+		font-variant-numeric: tabular-nums;
+		color: var(--up);
+		opacity: .9;
+	}
+
+	/* ---------- footer ---------- */
+
+	.foot {
+		margin-top: 15px;
+		padding-top: 12px;
+		border-top: 1px solid var(--border-soft);
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 10px;
+	}
+
+	.foot-meta {
+		font-size: 10.5px;
+		line-height: 1.5;
+		color: var(--faint);
+		font-variant-numeric: tabular-nums;
+	}
+
+	.btn {
+		flex: none;
+		height: 27px;
+		padding: 0 12px;
+		border: 1px solid var(--border);
+		border-radius: 6px;
+		background: var(--panel-alt);
+		color: var(--muted);
+		font: inherit;
+		font-size: 11.5px;
+		cursor: pointer;
+	}
+
+	.btn:hover { color: var(--text); border-color: var(--faint); }
+
+	/* ---------- sparkline ---------- */
+
+	.spark-wrap { margin-top: 10px; }
+
+	.spark { display: block; width: 100%; height: 78px; overflow: visible; }
+
+	.spark-axis {
+		display: flex;
+		justify-content: space-between;
+		margin-top: 4px;
+		font-size: 10px;
+		color: var(--faint);
+		font-variant-numeric: tabular-nums;
+	}
+
+	.seg {
+		display: inline-flex;
+		padding: 2px;
+		border-radius: 6px;
+		background: var(--panel-alt);
+		font-size: 10.5px;
+	}
+
+	.seg span {
+		padding: 1px 7px;
+		border-radius: 4px;
+		color: var(--faint);
+	}
+
+	.seg span.on { background: var(--panel); color: var(--text); box-shadow: 0 1px 3px rgba(0, 0, 0, .18); }
+
+	/* ---------- KPI grid ---------- */
+
+	.kpis {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 8px;
+		margin-top: 15px;
+	}
+
+	.kpi {
+		padding: 9px 10px;
+		border-radius: 8px;
+		background: var(--panel-alt);
+		border: 1px solid var(--border-soft);
+	}
+
+	.kpi-label {
+		font-size: 10.5px;
+		color: var(--faint);
+		letter-spacing: .02em;
+	}
+
+	.kpi-value {
+		margin-top: 2px;
+		font-size: 16px;
+		font-weight: 620;
+		font-variant-numeric: tabular-nums;
+		letter-spacing: -.01em;
+	}
+
+	.kpi-value.sm { font-size: 12.5px; font-weight: 550; }
+
+	.kpi-value.up { color: var(--up); }
+
+	/* ---------- stacked share bar ---------- */
+
+	.share {
+		display: flex;
+		height: 8px;
+		border-radius: 4px;
+		overflow: hidden;
+		margin-top: 14px;
+		gap: 2px;
+	}
+
+	.share i { display: block; height: 100%; }
+
+	.legend {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 4px 12px;
+		margin-top: 9px;
+		font-size: 11px;
+		color: var(--muted);
+	}
+
+	.legend span { display: inline-flex; align-items: center; gap: 5px; }
+
+	.legend b {
+		width: 7px;
+		height: 7px;
+		border-radius: 2px;
+		display: inline-block;
+	}
+
+	/* ---------- donut ---------- */
+
+	.donut-wrap {
+		display: flex;
+		align-items: center;
+		gap: 16px;
+		margin-top: 12px;
+	}
+
+	.donut { flex: none; position: relative; width: 116px; height: 116px; }
+
+	.donut-center {
+		position: absolute;
+		inset: 0;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 0;
+	}
+
+	.donut-center strong {
+		font-size: 21px;
+		font-weight: 650;
+		letter-spacing: -.02em;
+		font-variant-numeric: tabular-nums;
+	}
+
+	.donut-center small { font-size: 9.5px; color: var(--faint); }
+
+	.donut-legend {
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+		min-width: 0;
+		font-size: 11.5px;
+	}
+
+	.donut-legend div {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		color: var(--muted);
+	}
+
+	.donut-legend b { width: 7px; height: 7px; border-radius: 2px; flex: none; }
+
+	.donut-legend i {
+		flex: 1;
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		font-style: normal;
+		color: var(--text);
+	}
+
+	.donut-legend em {
+		font-style: normal;
+		font-variant-numeric: tabular-nums;
+		color: var(--faint);
+	}
+
+	/* ---------- chips under each demo ---------- */
+
+	.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 11px; }
+
+	.chip {
+		padding: 2px 8px;
+		border-radius: 20px;
+		border: 1px solid var(--border-soft);
+		font-size: 11px;
+		color: var(--muted);
+	}
+
+	.chip.ok { color: var(--up); border-color: var(--up-soft); background: var(--up-soft); }
+	.chip.need { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 28%, transparent); background: color-mix(in srgb, var(--warn) 10%, transparent); }
+
+	@media (max-width: 760px) {
+		body { padding: 24px 16px 56px; }
+		.note { grid-template-columns: 1fr; }
+		.page-head { flex-direction: column; align-items: flex-start; }
+	}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+	<header class="page-head">
+		<div>
+			<h1>Census · 面板美化 6 个方向</h1>
+			<p class="lede">每个方案都是 320px 宽的右侧边栏真实尺寸、真实数据（weekly-schedule 1,371 / lattice-board 79 / coffer 6，timeblock 与 lamplight 未上架）。纯 CSS + SVG，没有外部图表库。</p>
+		</div>
+		<button class="theme-btn" id="themeBtn">切换浅色</button>
+	</header>
+
+	<section class="note">
+		<div class="note-item">
+			<h3><span class="dot"></span>一次快照就能画</h3>
+			<p>份额条形、排行、收录率、最大值 —— 官方 <code>community-plugin-stats.json</code> 里现成有，改完立刻有图。</p>
+		</div>
+		<div class="note-item">
+			<h3><span class="dot warn"></span>需要先攒历史</h3>
+			<p>趋势线、+N/7 天。官方文件只有「当前值」，没有历史回填。Census 每次刷新往 <code>data.json</code> 记一条 <code>{t, downloads}</code>（约 30 字节/天），7 天后就有曲线。</p>
+		</div>
+		<div class="note-item">
+			<h3><span class="dot no"></span>做不到</h3>
+			<p>按版本、按地区、实时增长。官方一天只更新一次，且没有 per-version 计数（GitHub Releases 有，但要额外打 API，会撞 60 次/小时的限额）。</p>
+		</div>
+	</section>
+
+	<main class="grid">
+
+		<!-- A · 现状 -->
+		<article class="demo">
+			<div class="demo-head">
+				<div class="tagline"><span class="tag">A · 现状</span></div>
+				<h2>极简读数（对照）</h2>
+				<p>现在线上就是这个。信息对，但整块面板只有三种颜色。</p>
+			</div>
+			<div class="stage">
+				<div class="ribbon"><b>Census</b> · 右侧边栏</div>
+				<div class="panel">
+					<div class="eyebrow">合计</div>
+					<div class="total">1,456</div>
+					<div class="caption">次下载 · 5 个插件</div>
+
+					<div class="list" style="gap:4px">
+						<div class="item-top"><span class="name">weekly-schedule</span><span class="value">1,371</span></div>
+						<div class="item-top"><span class="name">lattice-board</span><span class="value">79</span></div>
+						<div class="item-top"><span class="name">coffer</span><span class="value">6</span></div>
+						<div class="item-top"><span class="name">timeblock</span><span class="value is-missing">—</span></div>
+						<div class="item-top"><span class="name">lamplight</span><span class="value is-missing">—</span></div>
+					</div>
+
+					<div class="foot">
+						<div class="foot-meta">检查于 2026-11-14 20:03</div>
+						<button class="btn">刷新</button>
+					</div>
+				</div>
+			</div>
+			<div class="chips">
+				<span class="chip ok">零成本</span>
+				<span class="chip">信息密度低</span>
+			</div>
+		</article>
+
+		<!-- B · 榜单条形 -->
+		<article class="demo">
+			<div class="demo-head">
+				<div class="tagline"><span class="tag rec">推荐</span><span class="tag">B · 条形榜单</span></div>
+				<h2>每条下面一根比例条</h2>
+				<p>不引入任何新数据，把「相对大小」这件最该被看见的事画出来。第一名加一点辉光，其余克制。</p>
+			</div>
+			<div class="stage">
+				<div class="ribbon"><b>Census</b> · 右侧边栏</div>
+				<div class="panel">
+					<div class="eyebrow-row">
+						<span class="eyebrow">合计</span>
+						<span class="delta">▲ 12 · 7 天</span>
+					</div>
+					<div class="total is-grad">1,456</div>
+					<div class="caption">次下载 · <em>3</em>/5 个已收录</div>
+
+					<div class="list">
+						<div class="item">
+							<div class="item-top"><a class="name" href="#">weekly-schedule</a><span class="value">1,371</span></div>
+							<div class="track"><span class="fill is-lead" style="width:100%"></span></div>
+						</div>
+						<div class="item">
+							<div class="item-top"><a class="name" href="#">lattice-board</a><span class="value">79</span></div>
+							<div class="track"><span class="fill" style="width:5.8%"></span></div>
+						</div>
+						<div class="item">
+							<div class="item-top"><a class="name" href="#">coffer</a><span class="value">6</span></div>
+							<div class="track"><span class="fill" style="width:1.2%"></span></div>
+						</div>
+						<div class="item">
+							<div class="item-top"><a class="name" href="#">timeblock</a><span class="value is-missing">—</span></div>
+							<div class="track is-empty"><span class="fill" style="width:0"></span></div>
+						</div>
+						<div class="item">
+							<div class="item-top"><a class="name" href="#">lamplight</a><span class="value is-missing">—</span></div>
+							<div class="track is-empty"><span class="fill" style="width:0"></span></div>
+						</div>
+					</div>
+
+					<div class="foot">
+						<div class="foot-meta">检查于 2026-11-14 20:03<br>官方更新于 2026-11-08 12:03</div>
+						<button class="btn">刷新</button>
+					</div>
+				</div>
+			</div>
+			<div class="chips">
+				<span class="chip ok">一次快照即可</span>
+				<span class="chip ok">窄栏友好</span>
+				<span class="chip need">+12 徽章需历史</span>
+			</div>
+		</article>
+
+		<!-- C · 趋势优先 -->
+		<article class="demo">
+			<div class="demo-head">
+				<div class="tagline"><span class="tag rec">推荐</span><span class="tag">C · 趋势优先</span></div>
+				<h2>顶部一条面积曲线</h2>
+				<p>回答「在涨还是在停」badge 回答不了的问题。列表退成紧凑行，右侧带当日增量。</p>
+			</div>
+			<div class="stage">
+				<div class="ribbon"><b>Census</b> · 右侧边栏</div>
+				<div class="panel">
+					<div class="eyebrow-row">
+						<span class="eyebrow">近 30 天</span>
+						<span class="seg"><span>30 天</span><span class="on">7 天</span></span>
+					</div>
+
+					<div class="spark-wrap">
+						<svg class="spark" viewBox="-8 -10 316 98" preserveAspectRatio="none">
+							<defs>
+								<linearGradient id="area" x1="0" y1="0" x2="0" y2="1">
+									<stop offset="0%" style="stop-color:var(--accent);stop-opacity:.45"/>
+									<stop offset="70%" style="stop-color:var(--accent);stop-opacity:.08"/>
+									<stop offset="100%" style="stop-color:var(--accent);stop-opacity:0"/>
+								</linearGradient>
+								<linearGradient id="line" x1="0" y1="0" x2="1" y2="0">
+									<stop offset="0%" style="stop-color:var(--accent);stop-opacity:.6"/>
+									<stop offset="55%" style="stop-color:var(--accent)"/>
+									<stop offset="100%" style="stop-color:var(--accent-2)"/>
+								</linearGradient>
+							</defs>
+							<g stroke="var(--border-soft)" stroke-width="1">
+								<line x1="0" y1="20" x2="300" y2="20" stroke-dasharray="2 4"/>
+								<line x1="0" y1="45" x2="300" y2="45" stroke-dasharray="2 4"/>
+							</g>
+							<path d="M0,70 L25,65.6 L50,61.2 L75,63 L100,54.8 L125,49.5 L150,44.2 L175,45.7 L200,37.8 L225,31.9 L250,23.7 L275,19.6 L300,14 L300,86 L0,86 Z" fill="url(#area)"/>
+							<path d="M0,70 L25,65.6 L50,61.2 L75,63 L100,54.8 L125,49.5 L150,44.2 L175,45.7 L200,37.8 L225,31.9 L250,23.7 L275,19.6 L300,14" fill="none" stroke="url(#line)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+							<circle cx="300" cy="14" r="3.4" style="fill:var(--accent-2)"/>
+							<circle cx="300" cy="14" r="7" style="fill:var(--accent);opacity:.24"/>
+						</svg>
+						<div class="spark-axis"><span>30 天前</span><span>今天</span></div>
+					</div>
+
+					<div class="total is-grad" style="margin-top:8px">1,371</div>
+					<div class="caption">次下载 · 30 天 <em>+191</em>（+16.2%）</div>
+
+					<div class="list compact">
+						<div class="item">
+							<div class="item-top">
+								<a class="name" href="#">weekly-schedule</a>
+								<span class="mini-delta">+12</span>
+								<span class="value">1,371</span>
+							</div>
+						</div>
+						<div class="item">
+							<div class="item-top">
+								<a class="name" href="#">lattice-board</a>
+								<span class="mini-delta">+3</span>
+								<span class="value">79</span>
+							</div>
+						</div>
+						<div class="item">
+							<div class="item-top">
+								<a class="name" href="#">coffer</a>
+								<span class="mini-delta">+1</span>
+								<span class="value">6</span>
+							</div>
+						</div>
+					</div>
+
+					<div class="foot">
+						<div class="foot-meta">共 13 次采样 · 自 2026-10-16</div>
+						<button class="btn">刷新</button>
+					</div>
+				</div>
+			</div>
+			<div class="chips">
+				<span class="chip need">需本地历史 7 天</span>
+				<span class="chip ok">最有信息量</span>
+			</div>
+		</article>
+
+		<!-- D · KPI 卡片 -->
+		<article class="demo">
+			<div class="demo-head">
+				<div class="tagline"><span class="tag">D · 指标卡</span></div>
+				<h2>两列 KPI + 份额条</h2>
+				<p>给「总量 / 增速 / 覆盖率 / 头名」各一个格子，下面一根堆叠份额条。信息最密，但需要滚动阅读。</p>
+			</div>
+			<div class="stage">
+				<div class="ribbon"><b>Census</b> · 右侧边栏</div>
+				<div class="panel">
+					<div class="eyebrow-row">
+						<span class="eyebrow">总览</span>
+						<span class="delta">▲ 12 · 7 天</span>
+					</div>
+					<div class="total is-grad">1,456</div>
+					<div class="caption">5 个插件合计下载</div>
+
+					<div class="kpis">
+						<div class="kpi">
+							<div class="kpi-label">本周新增</div>
+							<div class="kpi-value up">+16</div>
+						</div>
+						<div class="kpi">
+							<div class="kpi-label">已收录</div>
+							<div class="kpi-value">3<span style="font-size:11px;color:var(--faint);font-weight:400"> / 5</span></div>
+						</div>
+						<div class="kpi">
+							<div class="kpi-label">日均</div>
+							<div class="kpi-value">+1.2</div>
+						</div>
+						<div class="kpi">
+							<div class="kpi-label">头名占比</div>
+							<div class="kpi-value">94.2<span style="font-size:11px;color:var(--faint);font-weight:400">%</span></div>
+						</div>
+					</div>
+
+					<div class="share">
+						<i style="width:94.2%;background:linear-gradient(90deg,var(--accent),var(--accent-2))"></i>
+						<i style="width:5.4%;background:var(--accent-3)"></i>
+						<i style="width:0.4%;background:var(--faint)"></i>
+					</div>
+					<div class="legend">
+						<span><b style="background:var(--accent)"></b>weekly-schedule</span>
+						<span><b style="background:var(--accent-3)"></b>lattice-board</span>
+						<span><b style="background:var(--faint)"></b>coffer</span>
+					</div>
+
+					<div class="foot">
+						<div class="foot-meta">检查于 2026-11-14 20:03</div>
+						<button class="btn">刷新</button>
+					</div>
+				</div>
+			</div>
+			<div class="chips">
+				<span class="chip ok">一次快照即可</span>
+				<span class="chip need">增速需历史</span>
+				<span class="chip">信息过载</span>
+			</div>
+		</article>
+
+		<!-- E · 环形 -->
+		<article class="demo">
+			<div class="demo-head">
+				<div class="tagline"><span class="tag">E · 环形占比</span></div>
+				<h2>圆环 + 图例</h2>
+				<p>视觉上最「有图表感」，但一个插件占 94% 时圆环几乎只剩一种颜色 —— 好看，信息量低。</p>
+			</div>
+			<div class="stage">
+				<div class="ribbon"><b>Census</b> · 右侧边栏</div>
+				<div class="panel">
+					<div class="eyebrow-row">
+						<span class="eyebrow">下载分布</span>
+						<span class="delta">▲ 12 · 7 天</span>
+					</div>
+
+					<div class="donut-wrap">
+						<div class="donut">
+							<svg viewBox="0 0 116 116" width="116" height="116">
+								<g transform="rotate(-90 58 58)">
+									<circle cx="58" cy="58" r="46" fill="none" style="stroke:var(--track)" stroke-width="11"/>
+									<circle cx="58" cy="58" r="46" fill="none" style="stroke:var(--accent)" stroke-width="11"
+										stroke-dasharray="272.3 289" stroke-linecap="butt"/>
+									<circle cx="58" cy="58" r="46" fill="none" style="stroke:var(--accent-3)" stroke-width="11"
+										stroke-dasharray="15.6 289" stroke-dashoffset="-274.5" stroke-linecap="butt"/>
+								</g>
+							</svg>
+							<div class="donut-center">
+								<strong>1,456</strong>
+								<small>次下载</small>
+							</div>
+						</div>
+						<div class="donut-legend">
+							<div><b style="background:var(--accent)"></b><i>weekly-schedule</i><em>94.2%</em></div>
+							<div><b style="background:var(--accent-3)"></b><i>lattice-board</i><em>5.4%</em></div>
+							<div><b style="background:var(--faint)"></b><i>coffer</i><em>0.4%</em></div>
+							<div><b style="background:transparent;border:1px dashed var(--border)"></b><i style="color:var(--faint)">2 个未上架</i><em>—</em></div>
+						</div>
+					</div>
+
+					<div class="foot">
+						<div class="foot-meta">检查于 2026-11-14 20:03</div>
+						<button class="btn">刷新</button>
+					</div>
+				</div>
+			</div>
+			<div class="chips">
+				<span class="chip ok">一次快照即可</span>
+				<span class="chip">占比失衡时失效</span>
+			</div>
+		</article>
+
+		<!-- F · 组合 -->
+		<article class="demo">
+			<div class="demo-head">
+				<div class="tagline"><span class="tag rec">落地建议</span><span class="tag">F · 组合</span></div>
+				<h2>C 的曲线 + B 的条形</h2>
+				<p>两块拼起来才完整：曲线回答「整体在涨吗」，条形回答「是谁在涨」。320px 下仍然不挤。</p>
+			</div>
+			<div class="stage">
+				<div class="ribbon"><b>Census</b> · 右侧边栏</div>
+				<div class="panel">
+					<div class="eyebrow-row">
+						<span class="eyebrow">近 30 天</span>
+						<span class="delta">▲ 191 · +16.2%</span>
+					</div>
+
+					<div class="spark-wrap" style="margin-top:8px">
+						<svg class="spark" style="height:58px" viewBox="-8 -10 316 98" preserveAspectRatio="none">
+							<defs>
+								<linearGradient id="area2" x1="0" y1="0" x2="0" y2="1">
+									<stop offset="0%" style="stop-color:var(--accent);stop-opacity:.45"/>
+									<stop offset="70%" style="stop-color:var(--accent);stop-opacity:.08"/>
+									<stop offset="100%" style="stop-color:var(--accent);stop-opacity:0"/>
+								</linearGradient>
+								<linearGradient id="line2" x1="0" y1="0" x2="1" y2="0">
+									<stop offset="0%" style="stop-color:var(--accent);stop-opacity:.6"/>
+									<stop offset="55%" style="stop-color:var(--accent)"/>
+									<stop offset="100%" style="stop-color:var(--accent-2)"/>
+								</linearGradient>
+							</defs>
+							<path d="M0,70 L25,65.6 L50,61.2 L75,63 L100,54.8 L125,49.5 L150,44.2 L175,45.7 L200,37.8 L225,31.9 L250,23.7 L275,19.6 L300,14 L300,86 L0,86 Z" fill="url(#area2)"/>
+							<path d="M0,70 L25,65.6 L50,61.2 L75,63 L100,54.8 L125,49.5 L150,44.2 L175,45.7 L200,37.8 L225,31.9 L250,23.7 L275,19.6 L300,14" fill="none" stroke="url(#line2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+							<circle cx="300" cy="14" r="3.2" style="fill:var(--accent-2)"/>
+						</svg>
+					</div>
+
+					<div class="total is-grad" style="font-size:36px;margin-top:12px">1,456</div>
+					<div class="caption">次下载 · <em>3</em>/5 个已收录</div>
+
+					<div class="list" style="gap:9px">
+						<div class="item">
+							<div class="item-top">
+								<a class="name" href="#">weekly-schedule</a>
+								<span class="mini-delta">+12</span>
+								<span class="value">1,371</span>
+							</div>
+							<div class="track"><span class="fill is-lead" style="width:100%"></span></div>
+						</div>
+						<div class="item">
+							<div class="item-top">
+								<a class="name" href="#">lattice-board</a>
+								<span class="mini-delta">+3</span>
+								<span class="value">79</span>
+							</div>
+							<div class="track"><span class="fill" style="width:5.8%"></span></div>
+						</div>
+						<div class="item">
+							<div class="item-top">
+								<a class="name" href="#">coffer</a>
+								<span class="mini-delta">+1</span>
+								<span class="value">6</span>
+							</div>
+							<div class="track"><span class="fill" style="width:1.2%"></span></div>
+						</div>
+						<div class="item">
+							<div class="item-top">
+								<a class="name" href="#">timeblock</a>
+																<span class="value is-missing">—</span>
+							</div>
+							<div class="track is-empty"><span class="fill" style="width:0"></span></div>
+						</div>
+						<div class="item">
+							<div class="item-top">
+								<a class="name" href="#">lamplight</a>
+																<span class="value is-missing">—</span>
+							</div>
+							<div class="track is-empty"><span class="fill" style="width:0"></span></div>
+						</div>
+					</div>
+
+					<div class="foot">
+						<div class="foot-meta">13 次采样 · 检查于 2026-11-14 20:03</div>
+						<button class="btn">刷新</button>
+					</div>
+				</div>
+			</div>
+			<div class="chips">
+				<span class="chip need">需本地历史 7 天</span>
+				<span class="chip ok">信息最完整</span>
+				<span class="chip ok">窄栏可容纳</span>
+			</div>
+		</article>
+
+	</main>
+</div>
+
+<script>
+	const btn = document.getElementById('themeBtn');
+	btn.addEventListener('click', () => {
+		const root = document.documentElement;
+		const next = root.dataset.theme === 'dark' ? 'light' : 'dark';
+		root.dataset.theme = next;
+		btn.textContent = next === 'dark' ? '切换浅色' : '切换深色';
+	});
+</script>
+</body>
+</html>

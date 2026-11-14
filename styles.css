@@ -1,0 +1,515 @@
+/* A status bar item is a label, not a button — it only admits to being clickable
+   once the pointer is on it. */
+.census-status {
+	font-variant-numeric: tabular-nums;
+	cursor: pointer;
+	/* An id is a filename and can run long; the status bar is shared with every
+	   other plugin, so this one gives way first. */
+	max-width: 260px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.census-status:hover {
+	color: var(--text-normal);
+}
+
+/* While the stats file is in flight the numbers on screen are still the old
+   ones. Fading says so without a spinner next to a three-character number. */
+.census-status.is-busy {
+	opacity: 0.55;
+}
+
+/* --- the right-sidebar panel ------------------------------------------- */
+
+.census-view {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	padding-top: 6px;
+}
+
+.census-panel {
+	display: flex;
+	flex-direction: column;
+}
+
+/* Identity on the left, movement on the right: the two things a glance at the
+   top of the panel is asking for. */
+.census-head {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	min-width: 0;
+}
+
+/* The title sizes to its text and the pill takes the far end, so the icons in
+   between stay attached to the name instead of floating to the right edge. */
+.census-title {
+	flex: 0 1 auto;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	font-size: var(--font-ui-smaller);
+	font-weight: var(--font-semibold);
+	letter-spacing: 0.03em;
+	color: var(--text-muted);
+}
+
+/* The one piece of coloured chrome in the panel, because it is the one thing
+   that is not just a number. */
+.census-delta {
+	display: inline-flex;
+	align-items: center;
+	flex: none;
+	margin-left: auto;
+	padding: 1px 7px;
+	border-radius: 20px;
+	font-size: 11px;
+	font-weight: var(--font-semibold);
+	font-variant-numeric: tabular-nums;
+	background: color-mix(in srgb, var(--text-faint) 14%, transparent);
+	color: var(--text-faint);
+}
+
+.census-delta.is-up {
+	background: color-mix(in srgb, var(--color-green) 15%, transparent);
+	color: var(--color-green);
+}
+
+.census-delta.is-down {
+	background: color-mix(in srgb, var(--color-red) 15%, transparent);
+	color: var(--color-red);
+}
+
+.census-spark {
+	margin-top: 12px;
+	height: 56px;
+}
+
+.census-chart {
+	display: block;
+	width: 100%;
+	height: 100%;
+	/* The dot at the last point sits on the edge; clipping it would make the
+	   curve look like it stops short of today. */
+	overflow: visible;
+}
+
+/* "No samples" is a different statement from "flat", so it is a dashed box
+   rather than a curve along the floor. */
+.census-spark.is-empty {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	height: auto;
+	min-height: 56px;
+	padding: 8px 10px;
+	border: 1px dashed var(--background-modifier-border);
+	border-radius: var(--radius-s);
+	font-size: var(--font-ui-smaller);
+	line-height: 1.5;
+	text-align: center;
+	color: var(--text-faint);
+}
+
+.census-axis {
+	display: flex;
+	justify-content: space-between;
+	margin-top: 3px;
+	font-size: 10px;
+	color: var(--text-faint);
+	font-variant-numeric: tabular-nums;
+}
+
+/* The number and its label share a line: with the label underneath, the two
+   read as two separate facts. Baseline alignment is what makes it look like
+   "1,456 downloads" rather than a number next to a stray note. */
+.census-total-row {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	gap: 2px 9px;
+	margin-top: 14px;
+}
+
+/* The only large type in the plugin, and the reason for the panel to exist.
+   Tabular figures keep it from shifting while it is redrawn. */
+.census-total {
+	font-size: 44px;
+	line-height: 1.02;
+	font-weight: var(--font-semibold);
+	letter-spacing: -0.028em;
+	font-variant-numeric: tabular-nums;
+	color: var(--text-normal);
+}
+
+/* At 44px a flat colour reads as a placeholder; a gradient toward the accent
+   ties the number to the curve above it. Guarded, because a failed
+   background-clip would leave the text fully transparent. */
+@supports (-webkit-background-clip: text) {
+	.census-total {
+		background: linear-gradient(165deg, var(--text-normal) 8%, var(--interactive-accent) 120%);
+		-webkit-background-clip: text;
+		background-clip: text;
+		-webkit-text-fill-color: transparent;
+	}
+}
+
+.census-total.is-muted {
+	font-size: var(--font-ui-medium);
+	font-weight: var(--font-normal);
+	letter-spacing: 0;
+	background: none;
+	-webkit-text-fill-color: currentColor;
+	color: var(--text-faint);
+}
+
+.census-caption {
+	font-size: var(--font-ui-smaller);
+	color: var(--text-muted);
+}
+
+/* A dash in the list is explained here; the count is secondary, not alarming. */
+.census-caption .is-warn {
+	color: var(--text-faint);
+}
+
+/* --- one row per plugin ------------------------------------------------ */
+
+.census-list {
+	display: flex;
+	flex-direction: column;
+	gap: 11px;
+	margin-top: 16px;
+	padding-top: 13px;
+	border-top: 1px solid var(--background-modifier-border);
+}
+
+.census-item {
+	display: flex;
+	flex-direction: column;
+	gap: 5px;
+}
+
+.census-item-top {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+/* The name takes only the width its text needs, so the two icons sit beside it
+   rather than at the far end of a stretched cell. */
+.census-item-name {
+	flex: 0 1 auto;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	font-size: var(--font-ui-smaller);
+	color: var(--text-normal);
+}
+
+/* Two fixed columns on the right so +12/+3 and 1,371/79 line up down the
+   panel instead of shuffling with each number's width. */
+.census-item-delta {
+	flex: none;
+	margin-left: auto;
+	min-width: 30px;
+	text-align: right;
+	font-size: 11px;
+	font-variant-numeric: tabular-nums;
+	color: var(--text-faint);
+}
+
+.census-item-delta.is-up {
+	color: var(--color-green);
+}
+
+.census-item-delta.is-down {
+	color: var(--color-red);
+}
+
+.census-item-value {
+	flex: none;
+	min-width: 44px;
+	text-align: right;
+	font-size: var(--font-ui-smaller);
+	font-weight: var(--font-medium);
+	font-variant-numeric: tabular-nums;
+	color: var(--text-normal);
+}
+
+.census-item-value.is-missing {
+	font-weight: var(--font-normal);
+	color: var(--text-faint);
+}
+
+.census-track {
+	position: relative;
+	box-sizing: border-box;
+	height: 4px;
+	border-radius: 3px;
+	overflow: hidden;
+	background: color-mix(in srgb, var(--background-modifier-border) 70%, transparent);
+}
+
+.census-fill {
+	position: absolute;
+	inset: 0 auto 0 0;
+	min-width: 3px;
+	border-radius: 3px;
+	background: linear-gradient(
+		90deg,
+		var(--interactive-accent),
+		color-mix(in srgb, var(--interactive-accent) 55%, var(--text-normal))
+	);
+}
+
+.census-fill.is-lead {
+	box-shadow: 0 0 10px color-mix(in srgb, var(--interactive-accent) 35%, transparent);
+}
+
+/* `min-width` keeps a real 6-download bar visible; on a missing row it would
+   leave a stray dot that reads as "almost zero". */
+.census-track.is-empty {
+	background: transparent;
+	border-top: 2px dotted var(--background-modifier-border);
+}
+
+.census-track.is-empty .census-fill {
+	display: none;
+}
+
+/* --- the two doors out of a row ---------------------------------------- */
+
+/* Quiet until the pointer arrives: ten icons at full strength would out-shout
+   the numbers they sit next to. */
+.census-links {
+	display: inline-flex;
+	align-items: center;
+	flex: none;
+	gap: 2px;
+}
+
+.census-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 16px;
+	height: 16px;
+	border-radius: var(--radius-s);
+	color: var(--text-faint);
+	opacity: 0.8;
+	cursor: pointer;
+}
+
+.census-icon:hover {
+	color: var(--interactive-accent);
+	background: var(--background-modifier-hover);
+	opacity: 1;
+}
+
+.census-icon svg {
+	width: 13px;
+	height: 13px;
+}
+
+/* The Obsidian mark is filled rather than stroked, and it needs its violet to
+   be recognised as Obsidian at all -- in the icon set's grey it would be one
+   more anonymous glyph. The second path is a single lit facet; without it the
+   mark is a flat silhouette at 13px. */
+/* Both marks are solid silhouettes, in currentColor, so the hover rule above
+   tints them together. Sizes differ on purpose: the crystal is three-quarters
+   as wide as it is tall and needs the height, while a round octocat at the same
+   box would read heavier than everything else in the row. */
+.census-icon svg.census-mark {
+	width: 15px;
+	height: 15px;
+	shape-rendering: geometricPrecision;
+}
+
+.census-icon svg.census-octocat {
+	width: 13px;
+	height: 13px;
+}
+
+.census-octocat path {
+	fill: currentColor;
+}
+
+.census-mark .census-mark-body {
+	fill: currentColor;
+}
+
+/* The two back facets, so the mark has an edge down the middle instead of
+   being a rounded silhouette. */
+.census-mark .census-mark-shade {
+	fill: #000;
+	opacity: 0.18;
+}
+
+.census-mark .census-mark-shade-deep {
+	fill: #000;
+	opacity: 0.28;
+}
+
+/* --- footer ------------------------------------------------------------ */
+
+.census-foot {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+	margin-top: 16px;
+	padding-top: 12px;
+	border-top: 1px solid var(--background-modifier-border);
+}
+
+.census-foot-meta {
+	font-size: 10.5px;
+	line-height: 1.5;
+	color: var(--text-faint);
+	font-variant-numeric: tabular-nums;
+}
+
+.census-actions {
+	display: flex;
+	flex: none;
+	align-items: center;
+	gap: 6px;
+}
+
+/* A default Obsidian button is a form control; two of them at this width read
+   as a toolbar. Smaller, and they stay part of the reading. */
+.census-btn {
+	height: 26px;
+	padding: 0 10px;
+	border-radius: var(--radius-s);
+	font-size: 11.5px;
+	line-height: 1;
+	box-shadow: none;
+	background: var(--background-modifier-hover);
+	color: var(--text-muted);
+	cursor: pointer;
+}
+
+.census-btn:hover:not(:disabled) {
+	background: var(--background-modifier-active-hover);
+	color: var(--text-normal);
+}
+
+.census-btn:disabled {
+	opacity: 0.5;
+	cursor: default;
+}
+
+.census-empty {
+	font-size: var(--font-ui-small);
+	line-height: 1.6;
+	color: var(--text-muted);
+}
+
+/* --- the tracked list in the settings tab ------------------------------- */
+
+.census-targets {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	margin-bottom: 14px;
+	padding: 6px;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-m);
+}
+
+.census-targets-empty {
+	padding: 10px 8px;
+	font-size: var(--font-ui-small);
+	color: var(--text-faint);
+}
+
+.census-target-row {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 4px 6px;
+	border-radius: var(--radius-s);
+}
+
+.census-target-row:hover {
+	background: var(--background-modifier-hover);
+}
+
+.census-target-name {
+	flex: 1;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	font-size: var(--font-ui-small);
+	color: var(--text-normal);
+	text-decoration: none;
+}
+
+.census-target-name:hover {
+	color: var(--text-accent);
+}
+
+.census-target-count {
+	font-size: var(--font-ui-small);
+	font-variant-numeric: tabular-nums;
+	color: var(--text-muted);
+}
+
+.census-target-count.is-missing {
+	color: var(--text-faint);
+}
+
+.census-target-link {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex: none;
+	width: 22px;
+	height: 22px;
+	border-radius: var(--radius-s);
+	color: var(--text-faint);
+}
+
+.census-target-link:hover {
+	color: var(--text-normal);
+	background: var(--background-modifier-hover);
+}
+
+.census-target-link svg {
+	width: 13px;
+	height: 13px;
+}
+
+/* An icon button: no chrome until the pointer is on it, and then a warning
+   colour, because this is the only destructive control in the tab. */
+.census-target-remove {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 24px;
+	height: 24px;
+	padding: 0;
+	border: none;
+	background: transparent;
+	box-shadow: none;
+	color: var(--text-faint);
+	cursor: pointer;
+}
+
+.census-target-remove:hover {
+	color: var(--text-error);
+	background: var(--background-modifier-hover);
+}
+
+.census-target-remove svg {
+	width: 14px;
+	height: 14px;
+}

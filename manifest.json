@@ -1,0 +1,10 @@
+{
+	"id": "census",
+	"name": "Census",
+	"version": "0.2.0",
+	"minAppVersion": "1.6.0",
+	"description": "Download counts for the community plugins you track: a curve, a total, and one row per plugin with links to its listing and its repository.",
+	"author": "xwtaidev",
+	"authorUrl": "https://github.com/xwtaidev",
+	"isDesktopOnly": false
+}

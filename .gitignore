@@ -1,0 +1,24 @@
+# Build output
+/main.js
+*.map
+/preview/bundle.js
+
+# Dependencies
+node_modules/
+
+# Obsidian runtime data
+data.json
+
+# Local test vault
+/dev-vault/
+
+# Agent workspace notes
+.workbuddy/
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.log
+*.tsbuildinfo

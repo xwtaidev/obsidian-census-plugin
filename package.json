@@ -1,0 +1,21 @@
+{
+	"name": "obsidian-census-plugin",
+	"version": "0.1.0",
+	"description": "How many people have installed a plugin. One number for one plugin, taken from Obsidian's own stats and shown in the status bar.",
+	"main": "main.js",
+	"type": "module",
+	"scripts": {
+		"dev": "node esbuild.config.mjs",
+		"build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
+		"test": "node scripts/test.mjs",
+		"deploy": "node scripts/deploy.mjs"
+	},
+	"keywords": [],
+	"license": "MIT",
+	"devDependencies": {
+		"@types/node": "^22.15.17",
+		"esbuild": "0.25.5",
+		"obsidian": "1.13.1",
+		"typescript": "^5.8.3"
+	}
+}
