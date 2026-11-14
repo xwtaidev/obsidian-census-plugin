@@ -1,6 +1,6 @@
 {
 	"name": "obsidian-census-plugin",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"description": "How many people have installed a plugin. One number for one plugin, taken from Obsidian's own stats and shown in the status bar.",
 	"main": "main.js",
 	"type": "module",
