@@ -1,7 +1,7 @@
 {
 	"id": "census",
 	"name": "Census",
-	"version": "1.1.0",
+	"version": "1.1.1",
 	"minAppVersion": "1.7.2",
 	"description": "Download counts for the community plugins and themes you track: a curve, a total, and one row per target with links to its listing and its repository.",
 	"author": "xwtaidev",
