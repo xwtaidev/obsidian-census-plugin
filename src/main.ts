@@ -135,7 +135,10 @@ export default class CensusPlugin extends Plugin {
 		this.syncStatusBar();
 		this.registerView(VIEW_TYPE_CENSUS, (leaf) => new CensusView(leaf, this));
 
-		this.addRibbonIcon('users', t(this.lang, 'ribbonOpen'), () => void this.activateView());
+		// A chart mark, not `users`: the number on the panel is installs and
+		// updates, and two little figures in the ribbon would promise a
+		// headcount this plugin explicitly does not measure.
+		this.addRibbonIcon('chart-line', t(this.lang, 'ribbonOpen'), () => void this.activateView());
 
 		this.addCommand({
 			id: 'show-download-count',

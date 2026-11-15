@@ -61,7 +61,8 @@ export class CensusView extends ItemView {
 	}
 
 	getIcon(): string {
-		return 'users';
+		// The same mark as the ribbon, so the tab is recognisable as this panel.
+		return 'chart-line';
 	}
 
 	async onOpen(): Promise<void> {
