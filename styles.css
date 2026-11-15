@@ -35,6 +35,23 @@
 	flex-direction: column;
 }
 
+/* Two directories, two readings. The rule and the gap are what keep them from
+   being read as one list with a second headline in the middle. */
+.census-block.is-second {
+	margin-top: 22px;
+	padding-top: 18px;
+	border-top: 1px solid var(--background-modifier-border);
+}
+
+/* A sentence of explanation, quieter than a setting's description because it
+   is a footnote to the row above it. */
+.census-note {
+	margin: -4px 0 14px;
+	font-size: var(--font-ui-smaller);
+	line-height: 1.55;
+	color: var(--text-faint);
+}
+
 /* Identity on the left, movement on the right: the two things a glance at the
    top of the panel is asking for. */
 .census-head {
@@ -133,6 +150,13 @@
 	align-items: baseline;
 	gap: 2px 9px;
 	margin-top: 14px;
+}
+
+/* A theme has no curve, so its number sits directly under the title instead of
+   under a chart. A chart's own margin would leave it jammed against the head;
+   a few pixels more lets it start the block. */
+.census-total-row.is-lede {
+	margin-top: 18px;
 }
 
 /* The only large type in the plugin, and the reason for the panel to exist.

@@ -6,6 +6,7 @@ import {
 	changeOf,
 	dayStart,
 	mergeSamples,
+	migrateKeys,
 	pickDailyCommits,
 	readCommits,
 	readHistory,
@@ -86,6 +87,36 @@ test('readHistory drops anything malformed rather than guessing', () => {
 	assert.deepEqual(history[1], { t: at(11, 13), counts: { a: 12, b: 0 } });
 	assert.deepEqual(readHistory(undefined), []);
 	assert.deepEqual(readHistory({}), []);
+});
+
+test('migrateKeys re-files readings written before themes existed', () => {
+	// A bare id was a plugin id back then, because there was nothing else it
+	// could be. The alternative — dropping them — throws away the only curve a
+	// long-time user has.
+	const old: Sample[] = [
+		{ t: at(11, 12), counts: { 'weekly-schedule': 1200, coffer: 340 } },
+		{ t: at(11, 13), counts: { 'theme:Minimal': 2766179, 'plugin:coffer': 341 } },
+	];
+
+	assert.deepEqual(migrateKeys(old), [
+		{ t: at(11, 12), counts: { 'plugin:weekly-schedule': 1200, 'plugin:coffer': 340 } },
+		{ t: at(11, 13), counts: { 'theme:Minimal': 2766179, 'plugin:coffer': 341 } },
+	]);
+	// Idempotent: running it on an already-migrated history changes nothing.
+	assert.deepEqual(migrateKeys(migrateKeys(old)), migrateKeys(old));
+});
+
+test('two directories writing on one day make one point, not two', () => {
+	// The panel samples once a day whatever it is tracking. A second point for
+	// the same day would double what the footer claims about its own cadence,
+	// and a merged point is the only shape that can hold both numbers.
+	let history = recordSample([], at(11, 14, 9), { 'plugin:a': 10 });
+	history = recordSample(history, at(11, 14, 9), { 'theme:Minimal': 2766179 });
+
+	assert.deepEqual(history, [
+		{ t: at(11, 14), counts: { 'plugin:a': 10, 'theme:Minimal': 2766179 } },
+	]);
+	assert.equal(totalOf(history[0] as Sample, ['plugin:a', 'theme:Minimal']), 2766189);
 });
 
 test('totalOf adds only the ids that were tracked', () => {

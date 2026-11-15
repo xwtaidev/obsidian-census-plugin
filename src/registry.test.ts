@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { readIndex, readInfo, repoUrl } from './registry';
+import { readIndex, readInfo, readThemeIndex, repoUrl, themePageUrl, themeSlug } from './registry';
 
 const payload = [
 	{
@@ -69,4 +69,51 @@ test('readInfo reads the stored map and drops junk', () => {
 test('repoUrl is null when there is nothing to open', () => {
 	assert.equal(repoUrl('owner/name'), 'https://github.com/owner/name');
 	assert.equal(repoUrl(undefined), null);
+});
+
+/* --- themes ------------------------------------------------------------- */
+
+const themePayload = [
+	{
+		name: 'Minimal',
+		author: 'kepano',
+		repo: 'kepano/obsidian-minimal',
+		screenshot: 'screenshot.png',
+		modes: ['dark', 'light'],
+	},
+	{ name: 'Blue Topaz', author: 'whyt-byte', repo: 'whyt-byte/Blue-Topaz_Obsidian-css' },
+	{ name: 'Someone Else', author: 'x', repo: 'x/y' },
+];
+
+test('readThemeIndex matches on the display name, not on an id', () => {
+	// A theme has no id field at all; its name is the key in both documents.
+	const info = readThemeIndex(themePayload, ['Minimal', 'Blue Topaz']);
+	assert.deepEqual(Object.keys(info).sort(), ['Blue Topaz', 'Minimal']);
+	assert.equal(info['Blue Topaz']?.repo, 'whyt-byte/Blue-Topaz_Obsidian-css');
+	assert.equal(info['Minimal']?.author, 'kepano');
+});
+
+test('readThemeIndex is exact about case', () => {
+	// `minimal` is a different listing in the official stats, so a loose match
+	// would hand back the wrong repository as well as the wrong number.
+	assert.deepEqual(readThemeIndex(themePayload, ['minimal']), {});
+});
+
+test('themeSlug follows the community site’s rule', () => {
+	// Checked against the live pages: lowercase, letters and digits only,
+	// one hyphen between words, everything else dropped rather than replaced.
+	assert.equal(themeSlug('Minimal'), 'minimal');
+	assert.equal(themeSlug('Blue Topaz'), 'blue-topaz');
+	assert.equal(themeSlug('ITS Theme'), 'its-theme');
+	assert.equal(themeSlug('Dracula + LYT'), 'dracula-lyt');
+	assert.equal(themeSlug("Synthwave '84"), 'synthwave-84');
+	// Accents and dots vanish instead of becoming separators.
+	assert.equal(themeSlug('Rosé Pine'), 'ros-pine');
+	assert.equal(themeSlug('OLED.Black'), 'oledblack');
+});
+
+test('themePageUrl points at the theme page, or nowhere', () => {
+	assert.equal(themePageUrl('Blue Topaz'), 'https://community.obsidian.md/themes/blue-topaz');
+	// Nothing left to put in a path: better a missing link than a dead one.
+	assert.equal(themePageUrl('   '), null);
 });

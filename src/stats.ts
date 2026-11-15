@@ -1,17 +1,21 @@
 /**
- * Reading the official stats file. Deliberately free of any Obsidian import so
- * that the parsing, formatting and staleness rules can be tested by plain node.
+ * Reading the official stats. Deliberately free of any Obsidian import so that
+ * the parsing, formatting and staleness rules can be tested by plain node.
  *
- * Shape of the file, one key per plugin id:
+ * Two shapes, one vocabulary. Plugins, one key per id:
  *
  *   { "weekly-schedule": { "downloads": 12873, "updated": 1763078400000 } }
  *
+ * Themes, one key per display name:
+ *
+ *   { "Minimal": { "id": "Minimal", "download": 2766179 } }
+ *
  * `downloads` counts installs *and* updates, so it is not a count of people.
  * `updated` is when Obsidian last recomputed that entry, which may lag a day
- * behind the file itself.
+ * behind the file itself — the theme endpoint does not publish one at all.
  *
- * One file holds every plugin, so tracking a list costs the same single request
- * as tracking one — which is the whole reason this plugin can afford a list.
+ * Both are one document holding everything published, so tracking a list costs
+ * the same single request as tracking one — which is why a list is affordable.
  */
 
 export interface StatsEntry {
@@ -21,6 +25,37 @@ export interface StatsEntry {
 }
 
 export type StatsFile = Record<string, StatsEntry>;
+
+/** The two directories Census can read. Same idea, different paperwork. */
+export type Kind = 'plugin' | 'theme';
+
+/** One thing being tracked: a plugin id, or a theme's display name. */
+export interface Target {
+	kind: Kind;
+	id: string;
+}
+
+/**
+ * `<kind>:<id>` — the key a reading is filed under.
+ *
+ * History is one array shared by both directories, so the kind has to be part
+ * of the key: a plugin called `minimal` and a theme called `Minimal` are two
+ * different things that a bare id would merge into one row of the curve.
+ */
+export function keyOf(target: Target): string {
+	return `${target.kind}:${target.id}`;
+}
+
+/** The inverse of {@link keyOf}; null for a key from an older shape. */
+export function parseKey(key: string): Target | null {
+	const at = key.indexOf(':');
+	if (at <= 0 || at === key.length - 1) return null;
+
+	const kind = key.slice(0, at);
+	if (kind !== 'plugin' && kind !== 'theme') return null;
+	return { kind, id: key.slice(at + 1) };
+}
+
 
 /** One plugin's number, as it came out of the file. */
 export interface Entry {
@@ -58,17 +93,22 @@ export function toEpochMs(value: number): number {
 /**
  * Returns null when the id is absent or the entry is not a count — a plugin that
  * was removed from the directory still has a stale key in some mirrors.
+ *
+ * Plugins spell the number `downloads`, the theme endpoint spells it
+ * `download`. Reading both here keeps one parser for two documents; a count is
+ * a count whichever word the generator picked.
  */
 export function readDownloads(stats: unknown, id: string): StatsEntry | null {
 	if (!stats || typeof stats !== 'object') return null;
 	const entry = (stats as Record<string, unknown>)[id];
 	if (!entry || typeof entry !== 'object') return null;
 
-	const { downloads, updated } = entry as Record<string, unknown>;
-	if (typeof downloads !== 'number' || !Number.isFinite(downloads)) return null;
+	const { downloads, download, updated } = entry as Record<string, unknown>;
+	const count = typeof downloads === 'number' ? downloads : download;
+	if (typeof count !== 'number' || !Number.isFinite(count)) return null;
 
 	return {
-		downloads: Math.max(0, Math.trunc(downloads)),
+		downloads: Math.max(0, Math.trunc(count)),
 		updated:
 			typeof updated === 'number' && Number.isFinite(updated) ? toEpochMs(updated) : undefined,
 	};
@@ -124,8 +164,20 @@ export function normalizeId(raw: string): string {
 	return raw.trim().toLowerCase();
 }
 
+/**
+ * Trims a theme name without touching its case.
+ *
+ * A theme has no id: its display name *is* the key, and the endpoint's keys are
+ * case-sensitive — `Minimal` has 2.7M downloads while `minimal` is a different
+ * entry with four. Lowercasing here would quietly read the wrong theme, so the
+ * only tidy-up is whitespace.
+ */
+export function normalizeThemeName(raw: string): string {
+	return raw.trim().replace(/\s+/g, ' ');
+}
+
 /** Trims, lowercases, drops blanks and duplicates, keeps the order given. */
-export function normalizeList(raw: readonly string[]): string[] {
+export function normalizePluginList(raw: readonly string[]): string[] {
 	const seen = new Set<string>();
 	const out: string[] = [];
 	for (const item of raw) {
@@ -133,6 +185,23 @@ export function normalizeList(raw: readonly string[]): string[] {
 		if (!id || seen.has(id)) continue;
 		seen.add(id);
 		out.push(id);
+	}
+	return out;
+}
+
+/**
+ * The same for theme names, except that duplicates are compared exactly: two
+ * themes differing only by case are two themes, and collapsing them would drop
+ * one of them from the list.
+ */
+export function normalizeThemeList(raw: readonly string[]): string[] {
+	const seen = new Set<string>();
+	const out: string[] = [];
+	for (const item of raw) {
+		const name = normalizeThemeName(item);
+		if (!name || seen.has(name)) continue;
+		seen.add(name);
+		out.push(name);
 	}
 	return out;
 }

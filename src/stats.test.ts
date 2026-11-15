@@ -6,9 +6,13 @@ import {
 	formatFull,
 	formatWhen,
 	isStale,
+	keyOf,
 	missingIds,
 	normalizeId,
-	normalizeList,
+	normalizePluginList,
+	normalizeThemeList,
+	normalizeThemeName,
+	parseKey,
 	readDownloads,
 	readMany,
 	toEpochMs,
@@ -22,6 +26,20 @@ test('readDownloads takes the count out of the official shape', () => {
 		downloads: 12873,
 		updated: 1763078400000,
 	});
+});
+
+test('readDownloads reads the theme endpoint’s spelling too', () => {
+	// Themes say `download`, and have no timestamp at all — the shape is one
+	// field wide.
+	assert.deepEqual(readDownloads({ Minimal: { id: 'Minimal', download: 2766179 } }, 'Minimal'), {
+		downloads: 2766179,
+		updated: undefined,
+	});
+});
+
+test('readDownloads keeps the two spellings apart from a non-count', () => {
+	assert.equal(readDownloads({ x: { download: '12' } }, 'x'), null);
+	assert.equal(readDownloads({ x: { download: Number.NaN } }, 'x'), null);
 });
 
 test('readDownloads tolerates an entry without a timestamp', () => {
@@ -124,12 +142,33 @@ test('normalizeId keeps ids comparable', () => {
 	assert.equal(normalizeId(''), '');
 });
 
-test('normalizeList trims, lowercases, drops blanks and duplicates, keeps order', () => {
-	assert.deepEqual(normalizeList([' Timeblock ', 'coffer', '', 'coffer', 'COFFER']), [
+test('normalizePluginList trims, lowercases, drops blanks and duplicates, keeps order', () => {
+	assert.deepEqual(normalizePluginList([' Timeblock ', 'coffer', '', 'coffer', 'COFFER']), [
 		'timeblock',
 		'coffer',
 	]);
-	assert.deepEqual(normalizeList([]), []);
+	assert.deepEqual(normalizePluginList([]), []);
+});
+
+test('normalizeThemeName only tidies whitespace', () => {
+	// The name is the key, and the keys are case-sensitive: lowercasing here
+	// would quietly read `minimal` (four downloads) instead of `Minimal`.
+	assert.equal(normalizeThemeName('  Blue   Topaz '), 'Blue Topaz');
+	assert.equal(normalizeThemeName('anuppuccin'), 'anuppuccin');
+});
+
+test('normalizeThemeList keeps two themes that differ only by case', () => {
+	assert.deepEqual(normalizeThemeList([' Minimal ', 'Minimal', 'minimal', '']), ['Minimal', 'minimal']);
+});
+
+test('keyOf and parseKey round-trip a target into a reading key', () => {
+	assert.equal(keyOf({ kind: 'plugin', id: 'weekly-schedule' }), 'plugin:weekly-schedule');
+	assert.equal(keyOf({ kind: 'theme', id: 'Blue Topaz' }), 'theme:Blue Topaz');
+	assert.deepEqual(parseKey('theme:Blue Topaz'), { kind: 'theme', id: 'Blue Topaz' });
+	// A bare id is a key from before themes existed — not something to parse.
+	assert.equal(parseKey('weekly-schedule'), null);
+	assert.equal(parseKey('plugin:'), null);
+	assert.equal(parseKey('snippet:x'), null);
 });
 
 test('formatFull groups thousands', () => {

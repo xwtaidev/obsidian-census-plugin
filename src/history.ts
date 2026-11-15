@@ -1,14 +1,18 @@
 /**
- * The curve in the panel needs a series, and the official file only ever
- * carries today's total — it is a snapshot, not a log. So the series is ours.
+ * The curve in the panel needs a series, and the official numbers only ever
+ * carry today's total — they are a snapshot, not a log. So the series is ours.
  *
  * Two sources feed it, and both speak the same vocabulary:
  *
  *  - a sample recorded whenever a check lands on a day we have not recorded
- *    yet. One per UTC day, because that is the cadence the file is rewritten
- *    at: the bot commits it just after 00:00 UTC;
+ *    yet. One per UTC day, because that is the cadence the plugin file is
+ *    rewritten at: the bot commits it just after 00:00 UTC;
  *  - an optional backfill that walks that file's own git history, so a fresh
- *    install is not staring at an empty chart for a week.
+ *    install is not staring at an empty chart for a week. Themes have no such
+ *    file and therefore no backfill — a theme curve starts the day it is added.
+ *
+ * Counts are filed under `<kind>:<id>`, so one array can hold both directories
+ * without the two ever colliding.
  *
  * Pure, like `stats.ts`: the arithmetic of a curve should not need an app to
  * prove, and the shapes here (paths, deltas) are exactly what tends to be
@@ -16,11 +20,12 @@
  */
 
 import { HISTORY_MAX_SAMPLES } from './constants';
+import { parseKey } from './stats';
 
 export interface Sample {
 	/** Start of the UTC day this sample describes, epoch ms. */
 	t: number;
-	/** Downloads per plugin id, for the ids the file had that day. */
+	/** Downloads per target key (`plugin:id`, `theme:name`). */
 	counts: Record<string, number>;
 }
 
@@ -100,6 +105,21 @@ export function readHistory(value: unknown, max = HISTORY_MAX_SAMPLES): Sample[]
 		out.push({ t: dayStart(t), counts: clean });
 	}
 	return trimSamples(out, max);
+}
+
+/**
+ * Keys became `<kind>:<id>` the day themes arrived. Readings written before
+ * that carry bare plugin ids; they are not junk, they are the only curve a user
+ * has, so they are re-filed as what they were rather than thrown away.
+ */
+export function migrateKeys(samples: readonly Sample[]): Sample[] {
+	return samples.map((sample) => {
+		const counts: Record<string, number> = {};
+		for (const [key, value] of Object.entries(sample.counts)) {
+			counts[parseKey(key) ? key : `plugin:${key}`] = value;
+		}
+		return { t: sample.t, counts };
+	});
 }
 
 /** A day's total across the ids that were tracked at the time. */
